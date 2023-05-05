@@ -10,6 +10,14 @@ const zoom = ref(8);
 // the rotation is defined as a circle perimeter, so it goes from 0 to 2PI, to rotate 90 degrees put the rotation in PI/2.
 const rotation = ref(0);
 
+const markers = ref([
+  {id: 1, name: 'Marker 1', lat: -24.526, lng: -53.985, color: '#ff2255'},
+  {id: 2, name: 'Marker 2', lat: -24.352, lng: -54.200, color: '#2288ff'},
+  {id: 3, name: 'Marker 3', lat: -24.589, lng: -53.698, color: '#22ff55'},
+  {id: 4, name: 'Marker 4', lat: -24.825, lng: -53.428, color: '#ffff22'},
+  {id: 5, name: 'Marker 5', lat: -24.985, lng: -53.222, color: '#ff22ff'},
+])
+
 </script>
 <template>
     <ol-map
@@ -23,6 +31,21 @@ const rotation = ref(0);
       <ol-tile-layer>
         <ol-source-osm />
       </ol-tile-layer>
+      <ol-vector-layer>
+        <ol-source-vector>
+          <ol-feature v-for="marker in markers">
+            <ol-geom-point :coordinates="[marker.lng, marker.lat]"></ol-geom-point>
+            <ol-style>
+              <ol-style-icon
+                src="src/assets/marker.svg"
+                :color="marker.color"
+                :scale="1"
+              >
+              </ol-style-icon>
+            </ol-style>
+          </ol-feature>
+        </ol-source-vector>
+      </ol-vector-layer>
       <ol-attribution-control
         :collapsible="true"
         tipLabel="Atribuições"

@@ -18,9 +18,33 @@ const markers = ref([
   {id: 5, name: 'Marker 5', lat: -24.985, lng: -53.222, color: '#ff22ff'},
 ])
 
+const popUp = {
+  position: ref([]),
+  data: ref(''),
+};
+
+const atEveryMove = (evt: any) => {
+  // every event emitted by the map contains a reference to it
+  if (evt.map) {
+    //"forEachFeatureAtPixel" is a map method that checks and returns if there is a Feature linked to the pixel passed as a parameter
+    const feature = evt.map.forEachFeatureAtPixel(evt.pixel, (feat: any) => {
+      return feat;
+    });
+    if (feature && feature.get('type') === 'Marker') {
+      //"getGeometry()" returns the geometry linked to Feature, and "flatCoordinates" and the coordinate in the format we use
+      popUp.position.value = feature.getGeometry().flatCoordinates;
+      popUp.data.value = feature.get('name');
+    } else {
+      popUp.position.value = [];
+      popUp.data.value = '';
+    }
+  }
+};
+
 </script>
 <template>
     <ol-map
+    @pointermove="atEveryMove"
     >
       <ol-view
         :projection="projection"
@@ -33,7 +57,11 @@ const markers = ref([
       </ol-tile-layer>
       <ol-vector-layer>
         <ol-source-vector>
-          <ol-feature v-for="marker in markers">
+          <!-- add in ":properties" the data you want to retrieve by the "get('key')" method that the Feature object provides -->
+          <ol-feature v-for="marker in markers"
+          :key="marker.id"
+          :properties="{ name: marker.name, type: 'Marker' }"
+          >
             <ol-geom-point :coordinates="[marker.lng, marker.lat]"></ol-geom-point>
             <ol-style>
               <ol-style-icon
@@ -46,6 +74,18 @@ const markers = ref([
           </ol-feature>
         </ol-source-vector>
       </ol-vector-layer>
+
+      <ol-overlay
+        v-show="popUp.position.value.length"
+        :position="popUp.position.value"
+      >
+        <template v-slot>
+          <div style="background-color: white; padding: 2px">
+            <span>{{ popUp.data.value }}</span>
+          </div>
+        </template>
+      </ol-overlay>
+
       <ol-attribution-control
         :collapsible="true"
         tipLabel="Atribuições"
